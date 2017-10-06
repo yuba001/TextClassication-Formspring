@@ -16,7 +16,7 @@ def read_file(path):
 
     return lines
 
-def get_label(path):
+def get_comments_label(path):
     lines = read_file(path)
     labels = []
     comments = []
@@ -25,32 +25,35 @@ def get_label(path):
     #if counter < 500:
         ### Let us process the comment first
         processed_comment = parse_comments(line)
-        ### Now lets look at the labeling
-        respons_re = re.compile(r'(?:No|Yes)\s(?:\d|None)')
-        #mo = respons_re.search(lines[1])
-        mo = respons_re.findall(line)
-        ### let us count the comments if more than two amazon turks have responded
-        ### the same way
-        count_yes = 0
-        count_no = 0
-        for item in mo:
-            #print(item)
-            if re.search(r'Yes',item):
-                count_yes += 1
-            elif re.search(r'No',item):
-                count_no += 1
-        if (count_yes >= 2):
-            labels.append("1")
-            comments.append(processed_comment)
-        elif (count_no >= 2):
-            labels.append("0")
-            comments.append(processed_comment)
-        else:
-            #print(mo, " response too small or null")
-            pass #print('0')
+        ### check for labeling only if the processed_comment is not None
+        if processed_comment:
+            ### Now lets look at the labeling
+            respons_re = re.compile(r'(?:No|Yes)\s(?:\d|None)')
+            #mo = respons_re.search(lines[1])
+            mo = respons_re.findall(line)
+            ### let us count the comments if more than two amazon turks have responded
+            ### the same way
+            count_yes = 0
+            count_no = 0
+            for item in mo:
+                #print(item)
+                if re.search(r'Yes',item):
+                    count_yes += 1
+                elif re.search(r'No',item):
+                    count_no += 1
+            if (count_yes >= 2):
+                labels.append("1")
+                comments.append(processed_comment)
+            elif (count_no >= 2):
+                labels.append("0")
+                comments.append(processed_comment)
+            else:
+                #   print(mo, " response too small or null")
+                pass
         counter += 1
 
     return comments, labels
+
 
 def parse_comments(comment):
     #get the comment encolsed by Q: and No/Yes d
@@ -88,7 +91,7 @@ def dump_classifier_and_data(datasets, feature_list):
 
 
 if __name__ == '__main__':
-    comments, labels = get_label("formspring_data.csv")
+    comments, labels = get_comments_label("formspring_data.csv")
     #print(type(comments[0]))
     #for comment, label in zip(comments, labels):
     #    print(comment," and the label is: ", label)

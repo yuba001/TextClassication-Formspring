@@ -19,7 +19,7 @@ count = 0
 for comment, label in zip(word_data, labels_data):
     count += 1
     #if comment == None:
-    print(comment, label)
+    #print(comment, label)
     #print(count)
 
 #print(count)
@@ -42,4 +42,20 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.5,
                              stop_words='english')
 
-features_train = vectorizer.fit_transform(features_train[:10])
+features_train = vectorizer.fit_transform(features_train)
+features_test  = vectorizer.transform(features_test)
+
+from sklearn import tree
+from sklearn.metrics import accuracy_score
+clf = tree.DecisionTreeClassifier()
+clf = clf.fit(features_train, labels_train)
+pred =  clf.predict(features_test)
+accuracy = accuracy_score(pred,labels_test)
+print("accuracy is: ", round(accuracy,3))
+
+for rank in range(len(clf.feature_importances_)):
+    #if clf.feature_importances_[rank] > 0.2:
+    #print(rank, clf.feature_importances_[rank])
+    pass
+print(vectorizer.get_feature_names()[5591])
+print(vectorizer.get_feature_names()[5752])
