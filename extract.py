@@ -22,16 +22,13 @@ def get_label(path):
     comments = []
     counter = 0
     for line in lines:
-    #if counter < 4100:
+    #if counter < 500:
         ### Let us process the comment first
         processed_comment = parse_comments(line)
         ### Now lets look at the labeling
         respons_re = re.compile(r'(?:No|Yes)\s(?:\d|None)')
         #mo = respons_re.search(lines[1])
         mo = respons_re.findall(line)
-        #print(line)
-        #print(processed_comment)
-        #print(mo.group())
         ### let us count the comments if more than two amazon turks have responded
         ### the same way
         count_yes = 0
@@ -51,8 +48,6 @@ def get_label(path):
         else:
             #print(mo, " response too small or null")
             pass #print('0')
-        #print(len(comments), len(labels))
-        #print(counter)
         counter += 1
 
     return comments, labels
@@ -62,21 +57,24 @@ def parse_comments(comment):
     #print(len(comment))
     filter1 = re.search('Q:(.*?)(?:No|Yes)\s(?:\d|None)', comment)
     #remove the term "<br>A:" from pass1
-    filter2 = re.sub('<br>A:','',filter1.group(1))
-    #remove punctuation
-    #this execution is slightly differently in python 2.7
-    translator = str.maketrans('','',string.punctuation)
-    text_string = filter2.translate(translator)
-    #print(text_string)
-    ### split the text string into individual words, stem each word,
-    ### and append the stemmed word to words (make sure there's a single
-    ### space between each stemmed word)
-    words = ""
-    stemmer = SnowballStemmer("english")
-    for text in text_string.split():
-        #print stemmer.stem(text)
-        words += stemmer.stem(text) + " "
-    return words
+    if filter1:
+        filter2 = re.sub('<br>A:','',filter1.group(1))
+        #remove punctuation
+        #this execution is slightly differently in python 2.7
+        translator = str.maketrans('','',string.punctuation)
+        text_string = filter2.translate(translator)
+        #print(text_string)
+        ### split the text string into individual words, stem each word,
+        ### and append the stemmed word to words (make sure there's a single
+        ### space between each stemmed word)
+        words = ""
+        stemmer = SnowballStemmer("english")
+        for text in text_string.split():
+            #print stemmer.stem(text)
+            words += stemmer.stem(text) + " "
+        return words
+    else:
+        return None
 
 DATASET_PICKLE_FILENAME = "my_dataset.pkl"
 FEATURE_LIST_FILENAME = "my_feature_list.pkl"
@@ -90,8 +88,9 @@ def dump_classifier_and_data(datasets, feature_list):
 
 
 if __name__ == '__main__':
-    comments, labels = get_label("formspring_data_mod.csv")
+    comments, labels = get_label("formspring_data.csv")
     #print(type(comments[0]))
     #for comment, label in zip(comments, labels):
     #    print(comment," and the label is: ", label)
+    print(len(comments), len(labels))
     dump_classifier_and_data(comments, labels)
