@@ -40,8 +40,12 @@ labels_test = labels_test[:2]
 """
 #print(features_train[:5])
 ### your code goes here
-from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
+from sklearn.naive_bayes import  MultinomialNB
+from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.neural_network import MLPClassifier
+
 vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.5,
                              stop_words='english')
 
@@ -50,8 +54,13 @@ features_test  = vectorizer.transform(features_test)
 
 from sklearn import tree
 from sklearn.metrics import accuracy_score
-clf = tree.DecisionTreeClassifier()
-#clf = GaussianNB()
+
+clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(15,4), random_state=1)
+#clf = SVC()
+#clf = SGDClassifier()
+#clf = LogisticRegression()
+#clf = tree.DecisionTreeClassifier()
+#clf = MultinomialNB()
 clf = clf.fit(features_train, labels_train)
 pred =  clf.predict(features_test)
 #accuracy = accuracy_score(pred,labels_test)
