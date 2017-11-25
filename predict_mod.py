@@ -3,9 +3,6 @@
 import pickle
 import numpy
 numpy.random.seed(42)
-import pprint
-# metric model to evaluate the model performance
-from sklearn import metrics
 
 PERF_FORMAT_STRING = "\
 \tAccuracy: {:>0.{display_precision}f}\tPrecision: {:>0.{display_precision}f}\t\
@@ -18,15 +15,11 @@ labels_file = "my_feature_list.pkl"
 word_data = pickle.load( open(words_file, "rb"))
 labels_data = pickle.load( open(labels_file, "rb") )
 
-#convert labels_data to integers
-labels_data = [int(i) for i in labels_data]
-
 
 count = 0
 #print(word_data[:10])
 for comment, label in zip(word_data, labels_data):
     count += 1
-    #print(type(comment), type(label))
     #if comment == None:
     #print(comment, label)
     #print(count)
@@ -37,8 +30,7 @@ for comment, label in zip(word_data, labels_data):
 ### feature matrices changed to dense representations for compatibility with
 ### classifier functions in versions 0.15.2 and earlier
 from sklearn import model_selection
-features_train, features_test, labels_train, labels_test = model_selection.train_test_split(word_data,
-                                                            labels_data, test_size=0.2, random_state=42)
+features_train, features_test, labels_train, labels_test = model_selection.train_test_split(word_data, labels_data, test_size=0.1, random_state=42)
 
 """
 features_train = features_train[:2]
@@ -54,14 +46,11 @@ from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.neural_network import MLPClassifier
 
-vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.20, ngram_range = (1,2),
-                             max_features = 100000, stop_words='english')
-
-#pprint.pprint(vectorizer.transform(features_train))
+vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.5,
+                             stop_words='english')
 
 features_train = vectorizer.fit_transform(features_train)
 features_test  = vectorizer.transform(features_test)
-#pprint.pprint(vectorizer.get_feature_names())
 
 from sklearn import tree
 from sklearn.metrics import accuracy_score
@@ -77,10 +66,6 @@ pred =  clf.predict(features_test)
 #accuracy = accuracy_score(pred,labels_test)
 #print("accuracy is: ", round(accuracy,3))
 #[print(type(int(item))) for item in pred]
-
-# testing accuracy
-print(metrics.accuracy_score(labels_test, pred))
-print(metrics.classification_report(labels_test, pred))
 
 true_negatives = 0
 false_negatives = 0

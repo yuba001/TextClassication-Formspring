@@ -1,4 +1,5 @@
 from nltk.stem.snowball import SnowballStemmer
+from nltk.stem import WordNetLemmatizer
 import string
 import re
 import pickle
@@ -59,8 +60,8 @@ def parse_comments(comment):
     #get the comment encolsed by Q: and No/Yes d
     #print(len(comment))
     filter1 = re.search('Q:(.*?)(?:No|Yes)\s(?:\d|None)', comment)
-    #remove the term "<br>A:" from pass1
     if filter1:
+        #remove the repetitive term "<br>A:" from filter1
         filter2 = re.sub('<br>A:','',filter1.group(1))
         #remove punctuation
         #this execution is slightly differently in python 2.7
@@ -72,9 +73,11 @@ def parse_comments(comment):
         ### space between each stemmed word)
         words = ""
         stemmer = SnowballStemmer("english")
+        wordnet_lemmatizer = WordNetLemmatizer()
         for text in text_string.split():
             #print stemmer.stem(text)
             words += stemmer.stem(text) + " "
+            #words += wordnet_lemmatizer.lemmatize(text) + " "
         return words
     else:
         return None
