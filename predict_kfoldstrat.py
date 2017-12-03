@@ -83,7 +83,7 @@ clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(15,4), rando
 #print(metrics.classification_report(labels_test, pred))
 
 #Kfold stratified cross validation
-sss = StratifiedShuffleSplit(n_splits=1, test_size = 0.1, random_state = 42)
+sss = StratifiedShuffleSplit(n_splits=10, test_size = 0.1, random_state = 42)
 #print (sss)
 true_negatives = 0
 false_negatives = 0

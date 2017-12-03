@@ -1,11 +1,16 @@
 #!/usr/bin/python
 
 import pickle
+import time
 import numpy
 numpy.random.seed(42)
 import pprint
 # metric model to evaluate the model performance
 from sklearn import metrics
+from sklearn.decomposition import TruncatedSVD
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import Normalizer
+
 
 PERF_FORMAT_STRING = "\
 \tAccuracy: {:>0.{display_precision}f}\tPrecision: {:>0.{display_precision}f}\t\
@@ -54,14 +59,37 @@ from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.neural_network import MLPClassifier
 
-vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.20, ngram_range = (1,2),
-                             max_features = 100000, stop_words='english', use_idf=True)
+vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.30, ngram_range = (1,2),
+                             max_features = 100000, stop_words='english')
 
 #pprint.pprint(vectorizer.transform(features_train))
 
 features_train = vectorizer.fit_transform(features_train)
 features_test  = vectorizer.transform(features_test)
 #pprint.pprint(vectorizer.get_feature_names())
+
+print("  Actual number of tfidf features: %d" % features_train.get_shape()[1])
+
+print("\nPerforming dimensionality reduction using LSA")
+t0 = time.time()
+
+# Project the tfidf vectors onto the first N principal components.
+# Though this is significantly fewer features than the original tfidf vector,
+# they are stronger features, and the accuracy is higher.
+svd = TruncatedSVD(100)
+lsa = make_pipeline(svd, Normalizer(copy=False))
+
+# Run SVD on the training data, then project the training data.
+X_train_lsa = lsa.fit_transform(features_train)
+
+print("  done in %.3fsec" % (time.time() - t0))
+
+explained_variance = svd.explained_variance_ratio_.sum()
+print("  Explained variance of the SVD step: {}%".format(int(explained_variance * 100)))
+
+
+# Now apply the transformations to the test data as well.
+X_test_lsa = lsa.transform(features_test)
 
 from sklearn import tree
 from sklearn.metrics import accuracy_score
@@ -72,14 +100,14 @@ clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(15,4), rando
 #clf = LogisticRegression()
 #clf = tree.DecisionTreeClassifier()
 #clf = MultinomialNB()
-clf = clf.fit(features_train, labels_train)
-pred =  clf.predict(features_test)
+clf = clf.fit(X_train_lsa, labels_train)
+pred =  clf.predict(X_test_lsa)
 #accuracy = accuracy_score(pred,labels_test)
 #print("accuracy is: ", round(accuracy,3))
 #[print(type(int(item))) for item in pred]
 
 # testing accuracy
-print(metrics.accuracy_score(labels_test, pred))
+print("accuracy is: ", metrics.accuracy_score(labels_test, pred))
 print(metrics.classification_report(labels_test, pred))
 
 true_negatives = 0
