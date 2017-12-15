@@ -55,6 +55,8 @@ pipeline = Pipeline([('tf_idf', vectorizer),
 kf = KFold(n_splits = 12, random_state = 42, shuffle = True)
 for train_idx, test_idx in kf.split(word_data, labels_data):
     print(len(train_idx), len(test_idx))
+    #print(type(train_idx),type(test_idx))
+    #print(train_idx, test_idx)
     #sum_labels_train = 0
     #sum_labels_test =0
     features_train = []
